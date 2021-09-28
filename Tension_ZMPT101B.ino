@@ -1,45 +1,38 @@
-#include <Filters.h> //Easy library to do the calculations
+#include <Filters.h>  //external library that can be downloaded at this adress: https://www.arduinolibraries.info/libraries/filters
 
-float testFrequency = 50;                     // test signal frequency (Hz)
+
+//*******variables to be used in the code
+float testFrequency = 50;                     // Frequency used in our context(Africa)
 float windowLength = 40.0/testFrequency;     // how long to average the signal, for statistist
 
-int Sensor = 0; //Sensor analog input, here it's A0
-int Sensor1 = 0; //Sensor analog input, here it's A0
+int Sensor = 0; 
 
 float intercept = -0.04; // to be adjusted based on calibration testing
-float slope = 0.055; // to be adjusted based on calibration testing
+float slope = 0.055; // this code can be modified to obtain the value that we have
 //0.0405
 float current_Volts; // Voltage
-float current_Volts1; // Voltage
-      RunningStatistics inputStats;                //Easy life lines, actual calculation of the RMS requires a load of coding
-      RunningStatistics inputStats1;                //Easy life lines, actual calculation of the RMS requires a load of coding
-
+RunningStatistics inputStats;                //Use the Filters library to do calculations of the RMS requires a load of coding
+float volt=0;
 
 void setup() {
     Serial.begin( 9600 );    // start the serial port
-    inputStats.setWindowSecs( windowLength );
+    inputStats.setWindowSecs( windowLength );  //library calculations
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  Sensor = analogRead(A5);  // read the analog in value:
-  Sensor1 = analogRead(A9);  // read the analog in value:
+  volt = voltage();
+  delay(3000);  //wait 3 seconds
+}
 
-        inputStats.input(Sensor);  // log to Stats function
-        inputStats1.input(Sensor1);  // log to Stats function
 
-            current_Volts = intercept + slope * inputStats.sigma(); //Calibartions for offset and amplitude
-            current_Volts1 = intercept + slope * inputStats1.sigma(); //Calibartions for offset and amplitude
-
-            current_Volts= current_Volts*(40.3231);                //Further calibrations for the amplitude
-            current_Volts1= current_Volts1*(40.3231);                //Further calibrations for the amplitude
-
-            Serial.print( "\tVoltage1: " );
-            Serial.print( current_Volts ); //Calculation and Value display is done the rest is if you're using an OLED displ
-            delay(10);
-            Serial.print( "\tVoltage2: " );
-            Serial.print( current_Volts1 ); //Calculation and Value display is done the rest is if you're using an OLED displ
-            delay(10);
-
-            
+float voltage(){  
+    Sensor = analogRead(A5);  // read the analog value from the analog port
+    inputStats.input(Sensor);  // log to Stats function
+    current_Volts = intercept + slope * inputStats.sigma(); //Calibrations for offset and amplitude
+    current_Volts= current_Volts*(40.3231);                //Further calibrations for the amplitude
+    Serial.print( "Voltage: " );
+    Serial.print( current_Volts ); //print the value
+    delay(10);
+    return current_Volts;
 }
